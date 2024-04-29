@@ -57,7 +57,7 @@ impl<'a> Parser<'a> {
 
         match iter.next() {
             Some(Token::BulkString(response)) => Ok(Token::SimpleString(response.to_string())),
-            None => Ok(Token::SimpleString("+PONG".into())),
+            None => Ok(Token::SimpleString("PONG".into())),
             Some(_) => bail!("unexpected token!"),
         }
     }
