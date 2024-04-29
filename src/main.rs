@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use redis_starter_rust::parser;
 // Uncomment this block to pass the first stage
 use tokio::{
     io::{split, AsyncReadExt, AsyncWriteExt},
@@ -32,43 +33,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
                 let input = String::from_utf8_lossy(&buf[0..n]);
 
-                let data: Vec<&str> = input.split("\r\n").filter(|s| !s.is_empty()).collect();
-                println!("{:?}", data);
-                let param_count_str = data.first().unwrap();
-                if !param_count_str.starts_with('*') {
-                    return;
-                }
+                let mut parser = parser::Parser::new(&input);
 
-                let param_count = param_count_str[1..].parse::<usize>().unwrap();
-                println!("{param_count}");
+                let token = parser.parse().unwrap();
 
-                for i in 0..param_count {
-                    println!("{i}");
-                    let index = 1 + i;
-                    let command = data[index + 1];
-                    if command == "ping" {
-                        writer
-                            .write_all("+PONG\r\n".as_bytes())
-                            .await
-                            .expect("write data error!");
-                    }
-                }
+                dbg!(&token);
+                let response = format!("{token}");
+                writer.write_all(response.as_bytes()).await;
             }
         });
     }
 
     Ok(())
 }
-
-#[derive(Debug)]
-enum COMMANDTYPE {
-    PING,
-}
-
-#[derive(Debug)]
-struct RCommand {
-    command_type: COMMANDTYPE,
-    command_content: String,
-}
-
-impl RCommand {}
