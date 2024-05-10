@@ -45,9 +45,9 @@ impl std::fmt::Display for Token {
             }
             Token::Array(v) => {
                 write!(f, "*{}{CRLF}", v.len())?;
-                v.iter().for_each(|vv| {
-                    write!(f, "{vv}");
-                });
+                for i in v {
+                    write!(f, "{i}")?;
+                }
                 write!(f, "")
             }
             Token::NullArray => {

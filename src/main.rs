@@ -1,10 +1,11 @@
-use std::error::Error;
+use std::{error::Error, sync::Arc};
 
-use redis_starter_rust::parser;
+use redis_starter_rust::{app::AppState, parser};
 // Uncomment this block to pass the first stage
 use tokio::{
-    io::{split, AsyncReadExt, AsyncWriteExt},
+    io::{AsyncReadExt, AsyncWriteExt},
     net::TcpListener,
+    sync::Mutex,
 };
 
 const ADDR: &str = "127.0.0.1:6379";
@@ -16,10 +17,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind(ADDR).await?;
 
+    let app: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new()));
+
     println!("listening on :{}", ADDR);
 
     loop {
         let (mut socket, _) = listener.accept().await?;
+
+        let app = app.clone();
 
         tokio::spawn(async move {
             let (mut reader, mut writer) = socket.split();
@@ -34,12 +39,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 let input = String::from_utf8_lossy(&buf[0..n]);
 
                 let mut parser = parser::Parser::new(&input);
+                let mut app = app.lock().await;
 
-                let token = parser.parse().unwrap();
+                let token = parser.parse(|token| app.handle_command(token)).unwrap();
 
                 dbg!(&token);
                 let response = format!("{token}");
-                writer.write_all(response.as_bytes()).await;
+                writer.write_all(response.as_bytes()).await.unwrap();
             }
         });
     }
