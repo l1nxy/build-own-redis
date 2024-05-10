@@ -6,11 +6,15 @@ use anyhow::{bail, Result};
 #[derive(Debug, Default)]
 pub struct AppState {
     db: DbStore,
+    role: String,
 }
 
 impl AppState {
     pub fn new() -> Self {
-        AppState { db: DbStore::new() }
+        AppState {
+            db: DbStore::new(),
+            role: String::from("master"),
+        }
     }
     pub fn handle_command(&mut self, command: &[Token]) -> Result<Token> {
         let mut iter = command.iter().peekable();
@@ -20,6 +24,7 @@ impl AppState {
                 "echo" => self.echo_impl(command),
                 "set" => self.set_impl(command),
                 "get" => self.get_impl(command),
+                "info" => self.info_impl(command),
                 _ => bail!("unimplemented"),
             },
             None => bail!("unexpected token!"),
@@ -93,6 +98,25 @@ impl AppState {
                     Ok(Token::NullBuldString)
                 }
             }
+            None => Ok(Token::BulkString("".into())),
+            Some(_) => bail!("unexpected token!"),
+        }
+    }
+
+    fn info_impl(&mut self, command: &[Token]) -> Result<Token> {
+        let mut iter = command.iter().peekable();
+        iter.next();
+
+        match iter.next() {
+            Some(Token::BulkString(info_type)) => match info_type.as_str() {
+                "replication" => {
+                    let info = format!("role:{}", self.role);
+                    Ok(Token::BulkString(info))
+                }
+                _ => {
+                    bail!("need more para")
+                }
+            },
             None => Ok(Token::BulkString("".into())),
             Some(_) => bail!("unexpected token!"),
         }
