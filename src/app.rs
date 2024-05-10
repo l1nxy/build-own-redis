@@ -92,7 +92,7 @@ impl AppState {
                 if let Some(value) = self.db.get(key) {
                     Ok(Token::SimpleString(value.clone()))
                 } else {
-                    Ok(Token::NullArray)
+                    Ok(Token::NullBuldString)
                 }
             }
             None => Ok(Token::BulkString("".into())),

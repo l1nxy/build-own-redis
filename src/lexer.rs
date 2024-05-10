@@ -17,6 +17,7 @@ pub enum Token {
     SimpleError(String),
     Integer(String),
     BulkString(String),
+    NullBuldString,
     Array(Vec<Token>),
     NullArray,
     Null,
@@ -42,6 +43,9 @@ impl std::fmt::Display for Token {
             }
             Token::BulkString(s) => {
                 write!(f, "${}{CRLF}{}{CRLF}", s.len(), s)
+            }
+            Token::NullBuldString => {
+                write!(f, "$-1{CRLF}")
             }
             Token::Array(v) => {
                 write!(f, "*{}{CRLF}", v.len())?;
