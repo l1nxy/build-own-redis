@@ -10,10 +10,10 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new() -> Self {
+    pub fn new(role: &str) -> Self {
         AppState {
             db: DbStore::new(),
-            role: String::from("master"),
+            role: role.to_string(),
         }
     }
     pub fn handle_command(&mut self, command: &[Token]) -> Result<Token> {

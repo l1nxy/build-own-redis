@@ -16,8 +16,11 @@ const ADDR: &str = "127.0.0.1";
 #[command(version, about, long_about = None)]
 struct Args {
     /// Name of the server port
-    #[arg(short, long, default_value_t = 6379)]
+    #[arg(long, default_value_t = 6379)]
     port: u16,
+
+    #[arg(long, num_args = 2)]
+    replicaof: Vec<String>,
 }
 
 #[tokio::main]
@@ -27,7 +30,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let addr = format!("{ADDR}:{}", args.port);
     let listener = TcpListener::bind(&addr).await?;
 
-    let app: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new()));
+    let role = if args.replicaof.is_empty() {
+        "master"
+    } else {
+        "slave"
+    };
+    let app: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new(role)));
 
     println!("listening on :{}", addr);
 
