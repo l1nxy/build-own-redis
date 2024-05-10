@@ -30,7 +30,6 @@ impl DbStore {
     }
 
     pub fn get(&mut self, key: &str) -> Option<&String> {
-        dbg!(&self.expire);
         if let Some((time, key)) = self.expire.iter().find(|(_, in_key)| key == in_key) {
             if *time < Instant::now() {
                 self.store.remove(key);

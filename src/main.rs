@@ -1,5 +1,6 @@
 use std::{error::Error, sync::Arc};
 
+use clap::Parser;
 use redis_starter_rust::{app::AppState, parser};
 // Uncomment this block to pass the first stage
 use tokio::{
@@ -8,18 +9,27 @@ use tokio::{
     sync::Mutex,
 };
 
-const ADDR: &str = "127.0.0.1:6379";
+const ADDR: &str = "127.0.0.1";
+
+/// Simple program to greet a person
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Name of the server port
+    #[arg(short, long, default_value_t = 6379)]
+    port: u16,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    // You can use print statements as follows for debugging, they'll be visible when running tests.
-    println!("Logs from your program will appear here!");
+    let args = Args::parse();
 
-    let listener = TcpListener::bind(ADDR).await?;
+    let addr = format!("{ADDR}:{}", args.port);
+    let listener = TcpListener::bind(&addr).await?;
 
     let app: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new()));
 
-    println!("listening on :{}", ADDR);
+    println!("listening on :{}", addr);
 
     loop {
         let (mut socket, _) = listener.accept().await?;

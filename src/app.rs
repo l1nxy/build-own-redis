@@ -65,9 +65,7 @@ impl AppState {
                             if iter.peek().is_none() {
                                 bail!("error with set")
                             } else if let Some(Token::BulkString(time)) = iter.next() {
-                                dbg!(&time);
                                 let time = time.parse::<u64>()?;
-                                dbg!(&time);
                                 self.db.set(key, value, Some(Duration::from_millis(time)));
                             }
                         }

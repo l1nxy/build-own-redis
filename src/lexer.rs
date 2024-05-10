@@ -138,7 +138,6 @@ impl<'a> Lexer<'a> {
         while let Some(c) = self.next_if(&predicate) {
             value.push(c);
         }
-        dbg!(&value);
         Some(value).filter(|v| !v.is_empty())
     }
 
@@ -151,7 +150,6 @@ impl<'a> Lexer<'a> {
         let mut count = count;
 
         while count != 0 {
-            dbg!(&count);
             if let Some(c) = self.next_if(&predicate) {
                 value.push(c);
                 count -= 1;
@@ -163,7 +161,6 @@ impl<'a> Lexer<'a> {
     }
 
     fn next_if<F: Fn(char) -> bool>(&mut self, predicate: F) -> Option<char> {
-        dbg!(&self.iter);
         self.iter.peek().filter(|&c| predicate(*c))?;
         self.iter.next()
     }
@@ -304,7 +301,6 @@ mod test {
         let ret = lexer.next();
         assert!(ret.is_some());
         let ret = ret.unwrap();
-        dbg!(&ret);
         assert!(ret.is_ok());
         let ret = ret.unwrap();
 
@@ -323,7 +319,6 @@ mod test {
         let ret = lexer.next();
         assert!(ret.is_some());
         let ret = ret.unwrap();
-        dbg!(&ret);
         assert!(ret.is_ok());
         let ret = ret.unwrap();
 
