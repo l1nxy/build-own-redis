@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::{db::DbStore, lexer::Token};
 
 use anyhow::{bail, Result};
@@ -54,7 +56,22 @@ impl AppState {
         match iter.next() {
             Some(Token::BulkString(key)) => {
                 if let Some(Token::BulkString(value)) = iter.next() {
-                    self.db.set(key, value);
+                    if iter.peek().is_none() {
+                        self.db.set(key, value, None);
+                    }
+
+                    if let Some(Token::BulkString(px)) = iter.next() {
+                        if px.to_lowercase() == "px" {
+                            if iter.peek().is_none() {
+                                bail!("error with set")
+                            } else if let Some(Token::BulkString(time)) = iter.next() {
+                                dbg!(&time);
+                                let time = time.parse::<u64>()?;
+                                dbg!(&time);
+                                self.db.set(key, value, Some(Duration::from_millis(time)));
+                            }
+                        }
+                    }
                     Ok(Token::SimpleString("OK".into()))
                 } else {
                     bail!("error with set")
