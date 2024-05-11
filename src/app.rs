@@ -4,16 +4,20 @@ use crate::{db::DbStore, lexer::Token};
 
 use anyhow::{bail, Result};
 #[derive(Debug, Default)]
-pub struct AppState {
+pub struct ServerState {
     db: DbStore,
     role: String,
+    master_replid: String,
+    master_repl_offset: u64,
 }
 
-impl AppState {
+impl ServerState {
     pub fn new(role: &str) -> Self {
-        AppState {
+        ServerState {
             db: DbStore::new(),
             role: role.to_string(),
+            master_replid: String::from("8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"),
+            master_repl_offset: 0,
         }
     }
     pub fn handle_command(&mut self, command: &[Token]) -> Result<Token> {
@@ -110,7 +114,10 @@ impl AppState {
         match iter.next() {
             Some(Token::BulkString(info_type)) => match info_type.as_str() {
                 "replication" => {
-                    let info = format!("role:{}", self.role);
+                    let info = format!(
+                        "role:{}\nmaster_replid:{}\nmaster_repl_offset:{}",
+                        self.role, self.master_replid, self.master_repl_offset
+                    );
                     Ok(Token::BulkString(info))
                 }
                 _ => {

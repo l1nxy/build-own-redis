@@ -1,8 +1,8 @@
 use std::{error::Error, sync::Arc};
 
 use clap::Parser;
-use redis_starter_rust::{app::AppState, parser};
-// Uncomment this block to pass the first stage
+use redis_starter_rust::{app::ServerState, parser};
+
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpListener,
@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     } else {
         "slave"
     };
-    let app: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new(role)));
+    let app: Arc<Mutex<ServerState>> = Arc::new(Mutex::new(ServerState::new(role)));
 
     println!("listening on :{}", addr);
 
